@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="backend_fp.demo.mapper.OrderMapper">
+
+    <select id="findByUserId" resultType="backend_fp.demo.entity.Order">
+        select * from mall_order where user_id = #{userId}
+    </select>
+
+    <select id="findByNo" resultType="backend_fp.demo.entity.Order">
+        select order_id,order_no,user_id,total_price,pay_status,order_status from mall_order where order_no = #{orderNo} and user_id = #{userId}
+    </select>
+
+    <insert id="create" useGeneratedKeys="true" keyProperty="orderId">
+        insert into mall_order(order_no,user_id,total_price,pay_status,order_status) values (#{orderNo} ,#{userId},#{totalPrice},#{payStatus},#{orderStatus})
+    </insert>
+
+    <delete id="deleteByNo">
+
+        delete mall_order,mall_order_item
+        from mall_order left join mall_order_item on mall_order.order_id = mall_order_item.order_id
+        where mall_order.order_id = #{orderId}
+    </delete>
+
+    <resultMap id="OrderWithItems" type="backend_fp.demo.dto.OrderWithItems">
+        <id column="orderId" property="orderId"/>
+        <result column="orderNo" property="orderNo"/>
+        <result column="userId" property="userId"/>
+        <result column="totalPrice" property="totalPrice"/>
+        <result column="payStatus" property="payStatus"/>
+        <result column="orderStatus" property="orderStatus"/>
+        <collection property="orderItems" column="id" ofType="backend_fp.demo.entity.OrderItem">
+            <id column="orderItemId" property="orderItemId"/>
+            <result column="orderId" property="orderId"/>
+            <result column="goodsId" property="goodsId"/>
+            <result column="goodsCount" property="goodsCount"/>
+        </collection>
+
+
+    </resultMap>
+    <select id="findOrderWithItems" resultMap="OrderWithItems">
+        select
+            o.order_id orderId, o.order_no orderNo, o.user_id userId, o.total_price totalPrice, o.pay_status payStatus, o.order_status orderStatus,
+            oi.order_item_id orderItemId, oi.order_id orderId,oi.goods_id goodsId,oi.goods_count goodsCount
+        from
+            (mall_order  o left join mall_order_item oi on o.order_id = oi.order_id)
+        where order_no = #{orderNo} and user_id = #{userId}
+    </select>
+
+
+</mapper>

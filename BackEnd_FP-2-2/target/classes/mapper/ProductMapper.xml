@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="backend_fp.demo.mapper.ProductMapper">
+
+    <select id="findByName" resultType="backend_fp.demo.entity.Product">
+        select *
+        from product
+        where name like '%${name}%'
+        order by ${ordertype}
+    </select>
+
+    <select id="findByType" resultType="backend_fp.demo.entity.Product">
+        select *
+        from product
+        where type like '%${type}%'
+        order by ${ordertype}
+    </select>
+
+    <select id="findByTag" resultType="backend_fp.demo.entity.Product">
+        select *
+        from product
+        where tag like '%${tag}%'
+        order by ${ordertype}
+    </select>
+
+    <insert id = "addProduct" useGeneratedKeys="true" keyProperty="id">
+        insert into product(name,type,tag,price,in_stock) values(#{name},#{type},#{tag},#{price},#{in_stock})
+    </insert>
+
+    <update id = "addPurchase">
+        UPDATE product
+        SET purchase = purchase + 1
+        WHERE id = #{id}
+    </update>
+
+    <update id = "addComment">
+        UPDATE product
+        SET comment_number = comment_number + 1
+        WHERE id = #{id}
+    </update>
+
+    <update id = "minusComment" >
+        UPDATE product
+        SET comment_number = comment_number - 1
+        WHERE id = #{id}
+    </update>
+
+    <update id = "minusInStock">
+        UPDATE product
+        SET  in_stock = in_stock - 1
+        WHERE id = #{id}
+    </update>
+
+    <update id = "updateproduct" >
+        UPDATE product
+        SET name = #{name}, price = #{price}, in_stock = #{in_stock} , type = #{type}, tag = #{tag}, purchase = #{purchase}, comment_number = #{comment_number}
+        WHERE id = #{id}
+    </update>
+
+    <resultMap id="productWithComment" type="backend_fp.demo.dto.ProductWithComment">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="type" property="type"/>
+        <result column="tag" property="tag"/>
+        <result column="price" property="price"/>
+        <result column="in_stock" property="in_stock"/>
+        <result column="purchase" property="purchase"/>
+        <result column="comment_number" property="comment_number"/>
+        <collection property="comments" column="id" ofType="backend_fp.demo.entity.Comment">
+            <id column="c_id" property="id"/>
+            <result column="c_text" property="text"/>
+        </collection>
+    </resultMap>
+    <select id="findByIdWithComment" resultMap="productWithComment">
+        select p.id, p.name, p.price, p.in_stock, c.id as c_id, c.text as c_text
+        from product as p left join comment c on p.id = c.product_id
+        where product_id = #{id}
+    </select>
+
+    <select id="findByNameWithCommentsV2" resultMap="productWithComment">
+        select p.id, p.name, p.type,p.tag,p.price, p.in_stock,p.purchase,p.comment_number, c.id as c_id, c.text as c_text
+        from product as p left join comment c on p.id = c.product_id
+        where p.name = #{name}
+    </select>
+
+
+
+</mapper>
